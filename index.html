@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Destroy the virus</title>
+        <link  rel="stylesheet" href="./styles.css">
+    </head>
+    <body>
+        <div id="panel">
+            <form>
+                <input type="button" id="new-game" value="New game">
+                <input type="radio" id="mouse-control" name="control" checked="checked">
+                <label for="mouse-constrol">Mouse control</label>
+                <input type="radio" id="keyboard-control" name="control">
+                <label for="keyboard-control">Keyboard control</label>
+            </form>
+            <div class="data">
+                <p id="score">Summary Score: 0</p>
+                <p id="pandemic">Pandemic: 0</p>
+            </div>
+            <div class="data">
+                <p id="eliminated">Eliminated Viruses: 0</p>
+                <p id="missed">Missed Viruses: 0</p>
+            </div>
+        </div>
+
+        <canvas height="499" width="766" id="game-canvas">
+            
+        </canvas>
+
+        <script src="./Virus.js"></script>
+        <script src="./World.js"></script>
+        <script src="./Player.js"></script>
+        <script src="./Game.js"></script>        
+    </body>
+</html>
