@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Shooter</title>
+	</head>
+	<style media="screen">
+		canvas {
+			background: #efefef;
+			border: 3px groove black;
+			box-shadow: 2px 2px 3px #a0a0a0;
+			cursor: crosshair;
+		}
+	</style>
+	<body>
+		<canvas width="800" height="400"></canvas>
+		<script type="text/javascript">
+			/*
+				1. study
+					- CheatSheet https://simon.html5.org/dump/html5-canvas-cheat-sheet.html
+					- MDN Canvas https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
+
+				2. create shooter game
+					- draw background
+					- start drawing with request animation frame
+					- use ships array and render ships to canvas
+					- make them moving from bottom to top with various speed
+					- when they fly out of the screen, reposition them to the bottom
+					- add event listener to catch mouse click position
+					- calculate if ship was clicked
+					- destroy ship with click
+					- add sounds
+			*/
+
+			// global config
+			const speedMultiplier = 0.1;
+
+			// some constanst
+			const canvas = document.querySelector('canvas');
+			const ctx = canvas.getContext('2d');
+			ctx.strokeStyle = "lime";
+			const WIDTH = canvas.offsetWidth;
+			const HEIGHT = canvas.offsetHeight;
+
+			// game state
+			let ships = [
+				{ x: 30, y:HEIGHT, speed: 1.0 },
+				{ x: 80, y:HEIGHT, speed: 0.5 },
+				{ x:150, y:HEIGHT, speed: 0.3 },
+				{ x:200, y:HEIGHT, speed: 0.6 },
+				{ x:300, y:HEIGHT, speed: 0.8 },
+				{ x:450, y:HEIGHT, speed: 2.0 },
+				{ x:600, y:HEIGHT, speed: 1.0 },
+				{ x:700, y:HEIGHT, speed: 0.3 },
+				{ x:800, y:HEIGHT, speed: 1.5 }
+			]
+
+			var points = [];
+			//images
+			var backgroundImg = new Image(800,400);
+			backgroundImg.src = "background.jpeg";
+			var shipImg = new Image(100,100);
+			shipImg.src = "ship.png";
+			//time
+			var time = Date.now();
+			//effect
+			var shot = new Audio("shot.mp3");
+			//loop
+			var draw = function(){
+				ctx.drawImage(backgroundImg,0,0,800,400);
+				console.log(points);
+				for(var point of points)
+					ctx.rect(point.x,point.y,2,2);
+				var duration = Date.now() - time;
+				for(var ship of ships)
+				{
+					ctx.drawImage(shipImg,ship.x-50,ship.y-50,100,100);
+					if(ship.y > -100)
+						ship.y -= (duration/5)*ship.speed;
+					else
+						ship.y = HEIGHT;
+				}
+				time = Date.now();
+				ctx.stroke();
+				requestAnimationFrame(draw);
+			}
+
+			canvas.addEventListener("click",function(event){
+				var rect = event.target.getBoundingClientRect();
+  				var x = event.clientX - rect.left;
+  				var y = event.clientY - rect.top; 
+				points.push({x: x,y: y})
+
+				for(var i = 0;i < ships.length;i++)
+				{
+					var ship = ships[i];
+					if(x > ship.x-50 && x < ship.x+50 &&
+						y > ship.y-50 && y < ship.y+50)
+					{
+						shot.play();
+						ships.splice(i,1);
+					}
+				}
+			});
+
+			draw();
+		</script>
+	</body>
+</html>

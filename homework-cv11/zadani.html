@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Lecture 11</title>
+
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+			}
+			section {
+				display: none;
+			}
+			section.is-visible {
+				display: block;
+			}
+			#dnd {
+				height:70px;
+				border-radius: 50px;
+				border: 2px dotted #a0a0a0;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+			#dnd::before {
+				content: "D'n'D here!";
+				color: #2e2e2e;
+			}
+		</style>
+	</head>
+	<body>
+
+		<h1>My cool app</h1>
+
+		<nav>
+			<ul>
+				<li><a href="#accesslog">Log</a></li>
+				<li><a href="#imageinfo">Image Info</a></li>
+			</ul>
+		</nav>
+
+		<hr>
+
+		<section data-route="#accesslog">
+			<h2>Log</h2>
+
+			<h2>History entries</h2>
+			<ul id="history-entries"></ul>
+		</section>
+
+		<section data-route="#imageinfo">
+			<h2>Image Info</h2>
+
+			<div id="dnd"></div>
+			<ul id="imgInfo"></ul>
+			<div id="imgCnt"></div>
+		</section>
+
+
+		<script type="text/javascript">
+			/*
+				LocalStorage
+					https://developer.mozilla.org/en/docs/Web/API/Window/localStorage
+
+				History API
+					https://developer.mozilla.org/en-US/docs/Web/API/History_API
+
+				File API
+					https://developer.mozilla.org/en-US/docs/Web/API/File
+
+				Filereader API
+					https://developer.mozilla.org/en-US/docs/Web/API/FileReader
+
+				Drag'n'Drop API
+					https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API
+
+			*/
+
+			/*
+				1. Routing
+					- There will be two pages, each of them is already in the HTML as sections with data-route attribute
+					- Hide these pages by default with css or javascript
+					- Look at URL and decide which page to display, by default show the "accesslog" page
+						Look at History API link
+					- Re-render when browser URL changes, either by user clicking on link or by pressing browsers back/forward button
+						Look at popstate event on window and use addEventListener to listen on that event
+				2. LocalStorage
+					- Take a look at LocalStorage API
+					- In local storage - save every user access of website, when he comes to the page save the date he came
+					- On "accesslog" page display all of the dates he accessed the page
+				3. File API and Drag'n'Drop
+					- On second page use Drag and Drop API so user can drag and drop image to the rectangle
+					- When user drops image, use File Reader API to read and display name, size and type of image
+            */
+
+
+			// run
+			class MyApp
+			{
+				constructor()
+				{
+					this.urlLog = document.querySelector("a[href='#accesslog']");
+					this.urlDnd = document.querySelector("a[href='#imageinfo']");
+					this.sectionLog = document.querySelector("section[data-route='#accesslog']");
+					this.sectionDnd = document.querySelector("section[data-route='#imageinfo']");
+					this.entries = document.querySelector("#history-entries");
+					this.dropArea = document.querySelector("#dnd");
+				}
+
+				static createLI(text)
+				{
+						var li = document.createElement("li");
+						li.textContent = text;
+						return li;
+				}
+
+				init()
+				{
+					location.hash = "#accesslog";
+					this.sectionLog.classList.add("is-visible");
+					localStorage.setItem(localStorage.length,new Date().toString());
+					for(var i = 0;i < localStorage.length;i++)
+					{
+						var li = document.createElement("li");
+						li.textContent = localStorage.getItem(i);
+						this.entries.appendChild(li);
+					}
+				}
+
+				registerEvent()
+				{
+					this.urlLog.addEventListener("click",function(){
+						history.pushState("","","#accesslog");
+						this.toggle(false);
+					}.bind(this))
+
+					this.urlDnd.addEventListener("click",function(){
+						history.pushState("","","#imageinfo");
+						this.toggle(true);
+					}.bind(this))
+
+					window.onpopstate = function(event){
+						if(document.location.hash == "#accesslog")
+							this.toggle(false);
+						else
+							this.toggle(true);
+					}.bind(this);
+
+					this.dropArea.addEventListener("drop",function(event){
+						event.preventDefault();
+						var fileReader = new FileReader();
+						var file = event.dataTransfer.files[0];
+						fileReader.onload = function(){
+							var content = document.querySelector("#imgCnt");
+							var list = document.querySelector("#imgInfo");
+							var image = new Image();
+							image.src = fileReader.result;
+							content.appendChild(image);
+							list.appendChild(MyApp.createLI(file.name));
+							list.appendChild(MyApp.createLI(file.type));
+							list.appendChild(MyApp.createLI(file.size));
+						}.bind(this);
+						fileReader.readAsDataURL(file);
+					})
+					this.dropArea.addEventListener("dragover", e => e.preventDefault());
+				}
+
+				toggle(t)
+				{
+					if(t)
+					{
+						this.sectionDnd.classList.add("is-visible");
+						this.sectionLog.classList.remove("is-visible");
+					}
+					else
+					{
+						this.sectionDnd.classList.remove("is-visible");
+						this.sectionLog.classList.add("is-visible");
+					}
+				}
+			}
+
+			var app = new MyApp();
+			app.init();
+			app.registerEvent();
+
+		</script>
+	</body>
+</html>
